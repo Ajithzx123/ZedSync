@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend",
+      "runtimeExecutable": "D:\\projects\\ZedSync\\backend\\.venv\\Scripts\\python.exe",
+      "runtimeArgs": ["-m", "uvicorn", "app.main:app", "--app-dir", "D:\\projects\\ZedSync\\backend", "--port", "8000"],
+      "port": 8000,
+      "url": "http://localhost:8000"
+    },
+    {
+      "name": "mobile-web",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd /d D:\\projects\\ZedSync\\mobile && flutter build web --release && python -m http.server 5173 --bind 127.0.0.1 --directory build\\web"],
+      "port": 5173
+    }
+  ]
+}
