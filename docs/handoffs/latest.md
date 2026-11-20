@@ -1,38 +1,40 @@
 # Handoff (latest)
 
-Shared file between Claude and Codex. Overwritten at each handoff. **Only the agent currently acting updates it**, when handing work over. History lives in `docs/reviews/` and `docs/current_status.md`.
+Shared file between Claude and Codex. Overwritten at each handoff. **Only the agent currently acting updates it**, and always BEFORE the user is told to switch agents. History lives in `docs/reviews/` and `docs/current_status.md`.
 
 - **Last updated by:** Claude
 - **Last updated:** 2026-11-19
 
-## Next agent expected to act
+## Status
 
-**Claude**, after the user decides. No Codex action is pending.
-
-## Current task
-
-None active. The AI workflow setup (AGENTS.md, CLAUDE.md, docs/, review and handoff files) is complete.
-
-## Implemented changes
-
-Documentation only. No application source was changed.
+| Field | Value |
+|---|---|
+| Task | Phase 2 (MT5 live) plan |
+| Workflow state | `APPROVED_FOR_IMPLEMENTATION` (slice 2A only) |
+| Current agent | Claude (done acting) |
+| **Next agent** | **Claude** (slice 2A, once user names machine and account) |
+| Review type | Plan / design review (done, round 1) |
+| Review report | `docs/reviews/2026-11-19-phase2-mt5-plan.md` |
 
 ## Review status
 
-No review requested. No report in `docs/reviews/` yet.
+Codex verdict was Changes requested (F1 to F4, all major). Claude validated each against the plan and current `routes.py`, found all valid, and revised `docs/plans/phase2-mt5-live.md`. Resolutions are recorded in the report's `Claude resolution` section. No second Codex round assigned: the findings were specification gaps now filled in, not disputes. The user may ask for one for the security parts (2B vault, 2D auth).
 
 ## Outstanding findings
 
-None.
+None unresolved. F1 to F4 fixed in the plan.
 
 ## Files changed
 
-`AGENTS.md`, `CLAUDE.md`, `docs/architecture.md`, `docs/decisions.md`, `docs/current_status.md`, `docs/reviews/README.md`, `docs/reviews/review-template.md`, `docs/handoffs/latest.md` (all new, untracked; nothing committed).
+- `docs/plans/phase2-mt5-live.md` (revised)
+- `docs/reviews/2026-11-19-phase2-mt5-plan.md` (Claude resolution section)
+- `docs/handoffs/latest.md`
+- `backend/spikes/mt5_probe.py` (new, slice 2A probe; not run, not imported by the app)
 
 ## Tests run
 
-See the baseline table in `docs/current_status.md`.
+None; docs-only. `current_status.md` synced with the handoff. No application code changed. Nothing committed.
 
 ## Next action
 
-User answers open decisions D1 to D8 in `ROADMAP.md` and approves the initial commit. Then Claude writes a Phase 2 plan for approval.
+User approved the plan on 2026-11-19 (incl. GET-only test change in 2D). No Codex review pending. Probe written. User runs it on their Windows machine (investor password via hidden prompt, never shared in chat) and reports the output; Claude then records findings in docs/decisions.md. 2B onward need separate go-aheads.

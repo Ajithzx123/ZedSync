@@ -32,17 +32,42 @@ Read-only, multi-account trading monitor: one mobile app showing MT5, TradeLocke
 
 ## Workflow
 
-1. **Plan (Claude).** For any significant feature (new connector, persistence, auth, API shape change, new screen, anything touching the invariants below), write a plan: goal, files to change, approach, tests, risks. **Stop and wait for the user's approval.** Small fixes need no plan.
+1. **Plan (Claude).** For any significant feature (new connector, persistence, auth, API shape change, new screen, anything touching the invariants below), write a plan: goal, files to change, approach, tests, risks. Small fixes need no plan. Claude then assigns Codex a plan review (see "Orchestration"), resolves the findings, and only then asks the user for approval. **Never present an unreviewed plan as awaiting approval when it needs review.** Codex review is not user approval.
 2. **Implement (Claude).** Follow the approved plan only. Run the relevant tests. Do not touch unrelated files. Then update `docs/handoffs/latest.md` (next agent: Codex) with the files changed and tests run.
-3. **Review (Codex, when the user requests it).** Codex reviews against the requirements, the **actual files and the actual `git diff` / `git status`** (including untracked files), not Claude's summary. It checks: requirements met, bugs, edge cases, security, architecture fit, performance, and test quality. It writes a new report in `docs/reviews/` from `review-template.md`, with findings ranked by severity and file:line references, then updates the handoff (next agent: Claude). Codex may run read-only commands (tests, analyzer, `git diff`, `git log`).
+3. **Review (Codex, assigned by Claude automatically when the trigger list below applies; the user need not ask).** Codex reviews against the requirements, the **actual files and the actual `git diff` / `git status`** (including untracked files), not Claude's summary. It checks: requirements met, bugs, edge cases, security, architecture fit, performance, and test quality. It writes a new report in `docs/reviews/` from `review-template.md`, with findings ranked by severity and file:line references, then updates the handoff (next agent: Claude). Codex may run read-only commands (tests, analyzer, `git diff`, `git log`).
 4. **Triage (Claude).** Read the report. For each finding: fix it if valid, or reject it with reasoning. Never silently ignore one. Record each outcome in the report's `Claude resolution` section without altering Codex's original text, re-run tests, and update the handoff (next agent: Codex).
-5. **Final review (Codex, when requested).** Codex re-reads the report and the updated diff, adds the final-review section and verdict (`Approved` / `Changes requested`), and updates the handoff.
+5. **Final review (Codex, when Claude judges it warranted).** Codex re-reads the report and the updated diff, adds the final-review section and verdict (`Approved` / `Changes requested`), and updates the handoff.
 6. **Wrap up (Claude).** Update `docs/current_status.md` (and `architecture.md` / `decisions.md` if they changed).
+
+## Orchestration (Claude runs the workflow; the user only switches agents)
+
+The user is the product owner. They operate the whole loop with two commands: to Claude, "Check the project handoff and continue."; to Codex, "Check the project handoff and continue your pending task." Everything else is Claude's job. Never ask the user to write a Codex prompt, copy a plan or findings between agents, create review tasks, or remember who is next. Do not interrupt them with procedural questions; ask only about product decisions, missing requirements, real trade-offs, or approval gates.
+
+**Claude must automatically assign a Codex review for:** significant plans, specs, architecture, DB schemas and migrations, API contracts, security designs, multi-phase roadmaps, major refactors; UI/UX plans, wireframes, mockups, screenshots and navigation flows (list the image/file paths and tell Codex to open them, not just read text); significant implementations, complex bug fixes, auth, DB changes, financial logic, concurrency/background work, performance-sensitive and production-critical changes; and final verification of major features or after critical findings are resolved. Skip Codex for trivial changes (typos, formatting, low-risk doc edits).
+
+**Order for anything needing both review and approval:** Claude prepares -> Claude assigns Codex review in the handoff -> Codex reviews -> Claude validates and resolves findings -> Claude presents the reviewed result -> user approves or requests changes. Review approval is not implementation approval; implementation approval is not release approval.
+
+**Approval gates (user decides):** feature scope, product behavior, major architecture, significant trade-offs, API contract and DB changes, security-sensitive design, adding dependencies, destructive operations, commits/pushes, releases and deployment. Claude may resolve ordinary findings inside approved scope without asking.
+
+**Review cycles:** no infinite loops. Minor findings Claude may fix safely without another Codex round. Request another round only for critical architecture or security, or an unresolved disagreement.
+
+**Workflow states** (kept in the handoff, always matching reality): `PLANNING`, `WAITING_FOR_CODEX_PLAN_REVIEW`, `WAITING_FOR_CLAUDE_REVIEW_RESOLUTION`, `WAITING_FOR_USER_APPROVAL`, `APPROVED_FOR_IMPLEMENTATION`, `IMPLEMENTING`, `WAITING_FOR_CODEX_IMPLEMENTATION_REVIEW`, `RESOLVING_REVIEW_FINDINGS`, `WAITING_FOR_CODEX_FINAL_REVIEW`, `READY_FOR_USER_FINAL_APPROVAL`, `COMPLETED`, `BLOCKED`.
+
+**Before every handoff, Claude:** reads the current handoff, inspects `git status`/`git diff`, reconciles any mismatch, updates the handoff (state, next agent, review assignment), and only then tells the user which agent to open. Never record an approval or a completed review unless it is explicitly recorded or the report exists and was checked. If the handoff is stale or contradictory, trust the repo, reconcile, and do not restart finished work.
+
+**Ending a turn:** if Codex is next, the last thing Claude says is:
+
+> **NEXT ACTION: Open Codex for this project and enter:** "Check the project handoff and continue your pending task."
+
+If Claude is next, say to return to Claude with "Check the project handoff and continue." Always make clear what is done, what needs the user's decision, whether a Codex review is pending, and which agent is next. Keep it short.
+
+**Codex, on starting:** read `AGENTS.md`, `docs/current_status.md`, `docs/handoffs/latest.md`; act only if the handoff names Codex as next. Do the assigned review in the handoff's "Review assignment" section: open every listed file and image yourself, verify claims instead of trusting Claude's summary, find problems, risks, omissions, inconsistencies and alternatives, propose fixes but do not implement them, never touch application code. Save the report in `docs/reviews/` from the template, then update the handoff (state, next agent: Claude, report path).
 
 Review reports: one per significant feature or phase, named `YYYY-MM-DD-<feature>.md`; earlier reports are never overwritten (a re-review is a new "Round N" section). Original findings are immutable. See `docs/reviews/README.md`.
 
 ## Hard rules
 
+- **No new dependency without the user's approval.**
 - **No commit, push, merge, rebase, reset, branch deletion, or other destructive operation (deleting files/data, `git clean`, force anything) without the user's explicit approval.** Approval applies to that one action.
 - Modify only files needed for the task. Never edit `.venv/`, `mobile/build/`, `mobile/.dart_tool/`, generated or lock files unless the task requires it.
 - Never read, print, log, or commit secrets (`.env`, investor passwords, tokens, keys).
@@ -82,7 +107,7 @@ Starting a session (Claude or Codex):
 3. Act only if the handoff names you as the next agent; otherwise tell the user. Continue from "Next action" unless the user says otherwise.
 
 Handing over (whichever agent is currently acting):
-- Update `docs/handoffs/latest.md` with: current task, implemented changes, review status, outstanding findings, files changed, tests run, next action, and which agent acts next. Only the acting agent edits it.
+- Update `docs/handoffs/latest.md` (structure in the file itself) with: task, workflow state, current and next agent, whether Codex review and user approval are required, the review assignment, outstanding findings and decisions, files changed, git state, tests run, and the exact next action. Only the acting agent edits it. Update it BEFORE telling the user to switch agents.
 
 Ending a significant task or session (Claude):
 1. Update `docs/current_status.md`: completed, in progress (with files touched and what is left), pending, known issues, latest test results, next step, and any open review findings.

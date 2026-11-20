@@ -19,7 +19,8 @@ Original findings are **immutable**. Claude does not reword, delete, or re-rate 
 
 ## Loop
 
-1. **Claude** finishes the implementation, runs tests, and updates `docs/handoffs/latest.md` (next agent: Codex).
+0. Reviews also cover plans, designs and mockups, not only code. **Claude assigns them automatically** in the handoff's "Review assignment" section (see "Orchestration" in `AGENTS.md`); the user does not request them. For a plan review, Codex checks the plan against the actual code and requirements before the user is asked to approve.
+1. **Claude** finishes the plan or implementation, runs tests, and updates `docs/handoffs/latest.md` (next agent: Codex).
 2. **Codex** reads the handoff, then reviews the **actual code and `git diff` / `git status`** (including untracked files), not Claude's summary. It writes a new report from the template and updates the handoff (next agent: Claude).
 3. **Claude** reads the report and evaluates each finding: fixes valid ones, or rejects with reasoning. It records the outcome in the `Claude resolution` section, re-runs tests, and updates the handoff (next agent: Codex).
 4. **Codex** reads the resolutions and the new diff, adds a "Final review" section, and sets the verdict to `Approved` or `Changes requested`, then updates the handoff.

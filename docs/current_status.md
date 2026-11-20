@@ -4,7 +4,7 @@ Last updated: 2026-11-19 (AI workflow setup session). Update at the end of every
 
 ## Summary
 
-Phase 0 + 1 complete: FastAPI backend with a mock connector and a Flutter/GetX app reading it. No real broker connections. Git repo has **no commits yet**; everything is untracked.
+Phase 0 + 1 complete: FastAPI backend with a mock connector and a Flutter/GetX app reading it. No real broker connections. Initial commit `5e8646d` made 2026-11-19.
 
 ## Baseline (verified 2026-11-19)
 
@@ -22,7 +22,7 @@ Phase 0 + 1 complete: FastAPI backend with a mock connector and a Flutter/GetX a
 
 ## In progress
 
-Nothing.
+Phase 2 plan in `docs/plans/phase2-mt5-live.md`: Codex plan review done (F1 to F4 all fixed, see `docs/reviews/2026-11-19-phase2-mt5-plan.md`) and the user APPROVED the plan on 2026-11-19, including narrowing the GET-only test to "no trading routes" in 2D. State `APPROVED_FOR_IMPLEMENTATION` for slice 2A only; each later slice needs its own go-ahead. No Phase 2 code written.
 
 ## Pending
 
@@ -41,19 +41,19 @@ All of D1 to D8 are decided as of 2026-11-19 (see `docs/decisions.md`). D7: MT5 
 - No widget tests in the app.
 - One analyzer info (see baseline).
 - `mobile/README.md` and `pubspec.yaml` description are still Flutter template text.
-- No commits yet; `.claude/launch.json` is untracked.
 
 ## Awaiting user
 
-- Approval for the initial commit.
-- Which one MT5 account to use for the spike, and confirmation it has an investor password.
+- Nothing on the plan (approved). Slice 2B onward each need a go-ahead after 2A results.
+- For 2A: which Windows machine runs the terminals, which one MT5 account first, and confirmation it has an investor password (entered by the user, never shared).
 
 ## Next recommended step
 
-1. User approves an initial commit.
-2. Run `/plan-eng-review` on Phase 2 and write the plan for approval before any MT5 code.
+1. Initial commit done (5e8646d, 2026-11-19). Docs changes since then are uncommitted.
+1a. Plan reviewed by Codex, resolved and approved (done 2026-11-19).
+2. Slice 2A: Claude writes `backend/spikes/mt5_probe.py` once the user names the machine and account.
 3. User runs the MT5 spike on a real account (investor password only).
 
 ## Review state
 
-No pending Codex review or open findings. Reports live in `docs/reviews/`; the live handoff between Claude and Codex is `docs/handoffs/latest.md` (currently: no active task, next agent Claude).
+No pending Codex review or open findings. Reports live in `docs/reviews/`; the live handoff between Claude and Codex is `docs/handoffs/latest.md` (currently: plan approved, next agent Claude for slice 2A).
